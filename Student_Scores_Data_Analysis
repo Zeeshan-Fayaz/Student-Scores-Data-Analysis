@@ -1,0 +1,78 @@
+import pandas as pd
+import numpy as np
+import requests
+from bs4 import BeautifulSoup
+
+
+# Sample dataset
+eda_data = {
+    'Name': ['Amit', 'Riya', 'Sumit', 'Karan', 'Sara'],
+    'Age': [19, 18, 20, 19, 18],
+    'Maths': [78, 85, 92, 66, 74],
+    'Science': [88, 79, 95, 72, 80]
+}
+
+df = pd.DataFrame(eda_data)
+
+# Generate total and average
+df['Total'] = df['Maths'] + df['Science']
+df['Average'] = df['Total'] / 2
+
+# Numpy condition to classify high performers
+df['High Performer'] = np.where(df['Average'] > 80, "Yes", "No")
+
+print("===== EDA DATAFRAME =====")
+print(df)
+
+
+url = "https://quotes.toscrape.com/"
+response = requests.get(url)
+soup = BeautifulSoup(response.text, "html.parser")
+
+quotes = soup.find_all("span", class_="text")
+authors = soup.find_all("small", class_="author")
+
+scraped_data = []
+for i in range(len(quotes)):
+    scraped_data.append({
+        'Quote': quotes[i].text,
+        'Author': authors[i].text
+    })
+
+scraped_df = pd.DataFrame(scraped_data)
+
+print("\n===== SCRAPED QUOTES =====")
+print(scraped_df)
+
+
+# Creating sample CSV in-memory (for first-time users)
+sample_csv = pd.DataFrame({
+    'Name': ['Amit', 'Riya', 'Sumit', 'Karan', 'Sara'],
+    'Age': [19, np.nan, 20, 19, 18],
+    'Maths': [78, 85, 92, 66, 74],
+    'Science': [88, 79, 95, np.nan, 80]
+})
+
+sample_csv.to_csv("students.csv", index=False)
+
+# Load the csv for cleaning
+df_clean = pd.read_csv("students.csv")
+
+print("\n===== BEFORE CLEANING =====")
+print(df_clean)
+
+# Handle missing values
+df_clean['Age'].fillna(df_clean['Age'].mean(), inplace=True)
+df_clean['Science'].fillna(df_clean['Science'].mean(), inplace=True)
+
+# Remove duplicates if any
+df_clean.drop_duplicates(inplace=True)
+
+# Save cleaned CSV
+df_clean.to_csv("students_cleaned.csv", index=False)
+
+print("\n===== AFTER CLEANING =====")
+print(df_clean)
+print("\nCleaned CSV saved as students_cleaned.csv")
+
+
